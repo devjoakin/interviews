@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 // import { Mona_Sans } from "next/font/google";
 import localFont from 'next/font/local';
 import './globals.css';
+import { Toaster } from '@/components/ui/sonner';
 
 const babelFont = localFont({
   src: [
@@ -22,7 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en' className='dark'>
-      <body className={`${babelFont.className} antialiased`}>{children}</body>
+      <body className={`${babelFont.className} antialiased pattern`}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
