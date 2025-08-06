@@ -6,11 +6,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
+import { toast } from 'sonner';
+import { auth } from '@/firebase/client';
 
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { toast } from 'sonner';
 import FormField from '@/components/FormField';
+import { signIn, signUp } from '@/lib/actions/auth.action';
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -33,12 +39,44 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const { email, name, password } = values;
+    // const auth = getAuth();
     try {
       if (type === 'sign-in') {
+        const userCredentials = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const idToken = await userCredentials.user.getIdToken();
+
+        if (!idToken) {
+          toast.success('No es posible iniciar sesiónmb');
+          return;
+        }
+        await signIn({
+          email,
+          idToken,
+        });
         toast.success('Sesion iniciada correctamente');
         router.push('/');
       } else {
+        const userCredentials = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const result = await signUp({
+          uid: userCredentials.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+        if (!result?.success) {
+          toast.error(result?.message);
+          return;
+        }
         toast.success('Registro completado. Por favor inicia sesion');
         router.push('/sign-in');
       }
