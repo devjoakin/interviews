@@ -1,10 +1,24 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { dummyInterviews } from '@/constants';
 import InterviewCard from '@/components/InterviewCard';
+import {
+  getCurrentUser,
+  getInterviewByUserId,
+  getLatestInterviews,
+} from '@/lib/actions/auth.action';
 
-const HomePage = () => {
+const HomePage = async () => {
+  const user = await getCurrentUser();
+
+  const [userInterviews, latestInterviews] = await Promise.all([
+    await getInterviewByUserId(user?.id!),
+    await getLatestInterviews({ userId: user?.id! }),
+  ]);
+
+  const hasPastInterviews = userInterviews?.length > 0;
+  const hasUpcomingInterviews = latestInterviews?.length > 0;
+
   return (
     <>
       <section className='card-cta'>
@@ -32,10 +46,13 @@ const HomePage = () => {
         <h2>Tus entrevistas</h2>
 
         <div className='interviews-section'>
-          {dummyInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id} />
-          ))}
-          {/* <p>Aún no has realizado ninguna entrevista</p> */}
+          {hasPastInterviews ? (
+            userInterviews?.map((interview) => (
+              <InterviewCard {...interview} key={interview.id} />
+            ))
+          ) : (
+            <p>Aún no has realizado ninguna entrevista</p>
+          )}
         </div>
       </section>
 
@@ -43,10 +60,13 @@ const HomePage = () => {
         <h2>Realiza una entrevista</h2>
 
         <div className='interviews-section'>
-          {dummyInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id} />
-          ))}
-          {/* <p>No hay entrevistas disponibles</p> */}
+           {hasUpcomingInterviews ? (
+            latestInterviews?.map((interview) => (
+              <InterviewCard {...interview} key={interview.id} />
+            ))
+          ) : (
+            <p>No hay entrevistas disponibles</p>
+          )}
         </div>
       </section>
     </>
