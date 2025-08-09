@@ -2,11 +2,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import InterviewCard from '@/components/InterviewCard';
+import { getCurrentUser } from '@/lib/actions/auth.action';
 import {
-  getCurrentUser,
   getInterviewByUserId,
   getLatestInterviews,
-} from '@/lib/actions/auth.action';
+} from '@/lib/actions/interviews.actions';
 
 const HomePage = async () => {
   const user = await getCurrentUser();
@@ -60,7 +60,7 @@ const HomePage = async () => {
         <h2>Realiza una entrevista</h2>
 
         <div className='interviews-section'>
-           {hasUpcomingInterviews ? (
+          {hasUpcomingInterviews ? (
             latestInterviews?.map((interview) => (
               <InterviewCard {...interview} key={interview.id} />
             ))
